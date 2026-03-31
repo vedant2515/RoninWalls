@@ -58,7 +58,7 @@ export default function Login() {
                 setSuccessMsg('Login Successful!');
                 setTimeout(() => navigate('/'), 1500);
             } else {
-                // Sign Up Step 1: Validate terms then Request OTP
+                // Sign Up: validate then create account via Firebase
                 if (!agreeToTerms) {
                     setError('Please agree to the Terms of Service and Privacy Policy to continue.');
                     setIsLoading(false);
@@ -70,28 +70,16 @@ export default function Login() {
                     return;
                 }
 
-                // Send OTP request to backend
-                const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/send-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    setStep(2); // Move to OTP step
-                } else {
-                    const errorText = data.details ? `${data.error} (${data.details})` : (data.error || 'Failed to send OTP.');
-                    setError(errorText);
-                }
+                // Firebase creates account + sends verification email automatically
+                await signup(email, password);
+                setStep(2); // Show "check your email" screen
             }
         } catch (err) {
             console.error('Authentication Error:', err);
             if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
                 setError('Invalid email or password.');
             } else if (err.code === 'auth/email-already-in-use') {
-                setError('An account with this email already exists.');
+                setError('An account with this email already exists. Please log in.');
             } else {
                 setError(err.message || 'Failed to authenticate.');
             }
@@ -100,42 +88,7 @@ export default function Login() {
         }
     };
 
-    const handleVerifyOtp = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (!otp || otp.length < 6) {
-            setError('Please enter the 6-digit OTP.');
-            return;
-        }
-
-        try {
-            setIsLoading(true);
-
-            // Verify OTP with backend
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/auth/verify-otp`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, otp })
-            });
-
-            const data = await response.json();
-
-            if (response.ok) {
-                // OTP is valid! Proceed with Firebase Registration
-                await signup(email, password);
-                setSuccessMsg('Sign Up Successful!');
-                setTimeout(() => navigate('/'), 1500);
-            } else {
-                setError(data.error || 'Invalid or expired OTP.');
-            }
-        } catch (err) {
-            console.error('Verification Error:', err);
-            setError(err.message || 'Failed to complete registration.');
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Step 2 is now just the "check your email" confirmation screen — no OTP entry needed
 
     if (successMsg) {
         return (
@@ -238,36 +191,28 @@ export default function Login() {
                 )}
 
                 {step === 2 && (
-                    <form onSubmit={handleVerifyOtp} className="login-form">
-                        <div className="form-group">
-                            <label>6-Digit Verification Code</label>
-                            <input
-                                type="text"
-                                className="input-base"
-                                placeholder="123456"
-                                value={otp}
-                                onChange={(e) => setOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                                maxLength={6}
-                                disabled={isLoading}
-                                style={{ letterSpacing: '8px', fontSize: '1.2rem', textAlign: 'center' }}
-                            />
-                        </div>
-
-                        <button type="submit" className="btn btn-primary w-100 mt-4" disabled={isLoading}>
-                            {isLoading ? 'Verifying...' : 'Complete Sign Up'}
+                    <div style={{ textAlign: 'center', padding: '1rem 0' }}>
+                        <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>📧</div>
+                        <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
+                            Check your inbox!
+                        </h3>
+                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
+                            We sent a verification link to <strong style={{ color: 'var(--accent-primary)' }}>{email}</strong>.
+                            <br />Click the link in that email to activate your account.
+                        </p>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
+                            After verifying, come back here and log in normally.
+                        </p>
+                        <button
+                            className="btn btn-primary w-100"
+                            onClick={() => { setStep(1); setIsLogin(true); setError(''); }}
+                        >
+                            Go to Login
                         </button>
-
-                        <div className="text-center mt-3">
-                            <button
-                                type="button"
-                                className="btn btn-ghost"
-                                onClick={() => { setStep(1); setError(''); setOtp(''); }}
-                                disabled={isLoading}
-                            >
-                                Back to Email Entry
-                            </button>
-                        </div>
-                    </form>
+                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '1rem' }}>
+                            Didn't get the email? Check your spam folder.
+                        </p>
+                    </div>
                 )}
 
                 {step === 3 && (
