@@ -48,9 +48,7 @@ export function AuthProvider({ children }) {
         const firebaseUser = userCredential.user;
 
         // Send Firebase's built-in verification email (works on any network, no SMTP needed)
-        await sendEmailVerification(firebaseUser, {
-            url: window.location.origin + '/login', // redirect back to login after verifying
-        });
+        await sendEmailVerification(firebaseUser);
 
         // Generate a unique username
         const baseName = email.split('@')[0].replace(/[^a-zA-Z0-9]/g, '');
