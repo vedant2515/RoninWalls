@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 dotenv.config();
 
@@ -24,8 +24,21 @@ const s3Client = new S3Client({
     }
 });
 
-// Resend email client — works over HTTPS so Render never blocks it
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Nodemailer transporter using Gmail
+// family:4 forces IPv4 DNS — fixes ENETUNREACH on Render (which can't reach IPv6)
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // STARTTLS
+    family: 4,     // ← KEY FIX: force IPv4, Render can't reach Gmail's IPv6 address
+    auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+    },
+    tls: {
+        rejectUnauthorized: false
+    }
+});
 
 // In-memory OTP store: Map<email, { otp, expiresAt }>
 // For production, use Redis or MongoDB to avoid data loss on server restart
@@ -171,7 +184,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
         otpStore.set(email, { otp, expiresAt });
 
         const mailOptions = {
-            from: 'RoninWalls <onboarding@resend.dev>',
+            from: `"RoninWalls" <${process.env.SMTP_USER}>`,
             to: email,
             subject: 'RoninWalls - Your Verification Code',
             html: `<div style="font-family: sans-serif; padding: 20px; background:#0a0a0a; color:#fff;">
@@ -182,15 +195,12 @@ app.post('/api/auth/send-otp', async (req, res) => {
                    </div>`
         };
 
-        // Check if Resend key is configured
-        if (!process.env.RESEND_API_KEY) {
-            console.log(`[MOCK EMAIL — No RESEND_API_KEY] OTP for ${email} is ${otp}`);
+        if (!process.env.SMTP_PASS) {
+            console.log(`[MOCK EMAIL — No SMTP_PASS] OTP for ${email} is ${otp}`);
             return res.json({ success: true, message: 'Mock OTP generated. Check server logs.' });
         }
 
-        const { error: resendError } = await resend.emails.send(mailOptions);
-        if (resendError) throw new Error(resendError.message);
-
+        await transporter.sendMail(mailOptions);
         res.json({ success: true, message: 'OTP sent successfully.' });
 
     } catch (error) {
