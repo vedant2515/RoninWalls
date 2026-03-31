@@ -23,6 +23,7 @@ export default function Navbar() {
                     ) : (
                         <Link to="/login" className="btn btn-primary">Login</Link>
                     )}
+
                 </div>
             </div>
         </nav>
