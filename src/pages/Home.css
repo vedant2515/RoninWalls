@@ -192,6 +192,14 @@
 .hero-search-wrapper:focus-within {
     border-color: rgba(139, 92, 246, 0.3);
     background: rgba(255, 255, 255, 0.04);
+    transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+    .hero-search-wrapper:hover,
+    .hero-search-wrapper:focus-within {
+        transform: none !important;
+    }
 }
 
 .search-field-container {
@@ -316,8 +324,9 @@
         border-radius: var(--radius-2xl);
         background: rgba(13, 13, 15, 0.7);
         border: 1px solid rgba(255, 255, 255, 0.1);
-        width: calc(100% - 1rem); /* Slight margin for edge breathing */
+        width: 100% !important; /* Match container exactly */
         margin-top: 2rem;
+        transform: none !important;
     }
 
     .hero-search-input {
