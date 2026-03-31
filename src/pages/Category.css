@@ -164,7 +164,7 @@
     }
 
     .category-wallpaper-grid {
-        columns: 2 !important;
+        columns: 1 !important;
         column-gap: 0.6rem;
     }
 
