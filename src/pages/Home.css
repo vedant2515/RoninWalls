@@ -344,6 +344,11 @@
         width: 100%;
     }
 
+    .categories-section,
+    .trending-section {
+        padding: 1.5rem 1rem !important;
+    }
+
     .trending-grid {
         columns: 1;
         width: 100%;

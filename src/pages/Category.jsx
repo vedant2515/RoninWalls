@@ -12,9 +12,14 @@ export default function Category() {
     const { wallpapers: allWallpapers, loading, error } = useWallpapers();
 
     const filteredByCategory = useMemo(() => {
-        if (!id) return [];
+        if (!id || id === 'discover' || id === 'all') return allWallpapers;
         return allWallpapers.filter(w => w.category.toLowerCase() === id.toLowerCase());
     }, [allWallpapers, id]);
+
+    const displayTitle = useMemo(() => {
+        if (!id || id === 'discover' || id === 'all') return 'Discover All';
+        return id.charAt(0).toUpperCase() + id.slice(1);
+    }, [id]);
 
     const filteredWallpapers = useMemo(() => {
         if (deviceFilter === 'All') return filteredByCategory;
@@ -76,7 +81,7 @@ export default function Category() {
                 {/* RIGHT CONTENT GRID */}
                 <main className="category-content">
                     <div className="category-header-minimal">
-                        <h1 className="text-gradient">{categoryName} Wallpapers</h1>
+                        <h1 className="text-gradient">{displayTitle} Wallpapers</h1>
                     </div>
 
                     {loading ? (

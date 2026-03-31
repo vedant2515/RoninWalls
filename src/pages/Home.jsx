@@ -176,9 +176,9 @@ export default function Home() {
                                 <div className="section-header flex-between">
                                     <h2>Trending This Week</h2>
                                     {!isSearching && (
-                                        <button className="btn btn-outline flex-center view-all-btn">
+                                        <Link to="/category/discover" className="btn btn-outline flex-center view-all-btn">
                                             View All <ArrowRight size={16} style={{ marginLeft: '8px' }} />
-                                        </button>
+                                        </Link>
                                     )}
                                 </div>
                                 <div className="trending-grid">
