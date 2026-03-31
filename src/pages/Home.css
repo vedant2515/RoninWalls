@@ -350,8 +350,9 @@
     }
 
     .trending-grid {
-        columns: 1;
+        columns: 2;
         width: 100%;
+        column-gap: 1rem;
     }
 }
 

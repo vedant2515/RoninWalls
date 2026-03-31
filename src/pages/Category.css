@@ -164,8 +164,8 @@
     }
 
     .category-wallpaper-grid {
-        columns: 1 !important;
-        column-gap: 0.6rem;
+        columns: 2 !important;
+        column-gap: 0.75rem;
     }
 
     .category-header-minimal h1 {

@@ -49,34 +49,30 @@ export default function WallpaperCard({ id, imageUrl, title, type }) {
                 <div className="wallpaper-image-wrapper">
                     <img src={imageUrl} alt={title} loading="lazy" className="wallpaper-image" />
                     <div className="wallpaper-type-badge">{type}</div>
+                    
+                    {/* NEW ACTION OVERLAY */}
+                    <div className="wallpaper-actions-overlay">
+                        <button 
+                            className={`overlay-icon-btn ${isLiked ? 'liked' : ''}`} 
+                            aria-label="Like"
+                            onClick={toggleLike}
+                        >
+                            <Heart size={18} fill={isLiked ? "#ffffff" : "none"} color="#ffffff" />
+                            {likeCount > 0 && <span className="like-count">{likeCount}</span>}
+                        </button>
+                        <button 
+                            className="overlay-icon-btn" 
+                            aria-label="Download"
+                            onClick={handleDownload}
+                            disabled={downloading}
+                        >
+                            <Download size={18} color="#ffffff" />
+                        </button>
+                    </div>
                 </div>
             </Link>
 
-            <div className="wallpaper-info flex-between">
-                <div className="wallpaper-meta">
-                    <h4 className="truncate">{title}</h4>
-                </div>
-                <div className="wallpaper-actions">
-                    <button 
-                        className={`icon-btn tooltip-container ${isLiked ? 'liked' : ''}`} 
-                        aria-label="Like"
-                        onClick={toggleLike}
-                        style={isLiked ? { color: '#ec4899', background: 'rgba(236, 72, 153, 0.15)' } : {}}
-                    >
-                        <Heart size={18} fill={isLiked ? "#ec4899" : "none"} />
-                        {likeCount > 0 && <span style={{ marginLeft: '6px', fontSize: '0.85rem', fontWeight: 'bold' }}>{likeCount}</span>}
-                    </button>
-                    <button 
-                        className="icon-btn tooltip-container" 
-                        aria-label="Download"
-                        onClick={handleDownload}
-                        disabled={downloading}
-                        style={{ opacity: downloading ? 0.7 : 1 }}
-                    >
-                        <Download size={18} />
-                    </button>
-                </div>
-            </div>
+
         </div>
     );
 }
