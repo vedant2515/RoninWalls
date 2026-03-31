@@ -1,0 +1,100 @@
+.login-page {
+    min-height: calc(100vh - 160px);
+    align-items: center;
+}
+
+.login-card {
+    width: 100%;
+    max-width: 450px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: var(--bg-card);
+}
+
+.login-card h2 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.login-subtitle {
+    color: var(--text-secondary);
+    margin-bottom: 2rem;
+}
+
+.login-form {
+    text-align: left;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.mt-4 {
+    margin-top: 1.5rem;
+}
+
+.error-message {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.login-footer {
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.login-footer a {
+    color: var(--accent-primary);
+    text-decoration: underline;
+}
+
+.terms-checkbox-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 1.25rem;
+    padding: 0.75rem 1rem;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-lg);
+}
+
+.terms-checkbox-row input[type='checkbox'] {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    margin-top: 2px;
+    accent-color: var(--accent-primary);
+    cursor: pointer;
+}
+
+.terms-label {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    cursor: pointer;
+    text-align: left;
+}
+
+.terms-label a {
+    color: var(--accent-primary);
+    text-decoration: underline;
+    transition: opacity 0.2s;
+}
+
+.terms-label a:hover {
+    opacity: 0.8;
+}
