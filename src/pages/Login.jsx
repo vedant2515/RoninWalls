@@ -4,97 +4,39 @@ import { useAuth } from '../context/AuthContext';
 import './Login.css';
 
 export default function Login() {
-    const [isLogin, setIsLogin] = useState(true);
-    const [step, setStep] = useState(1); // 1: Email/Password, 2: OTP Entry, 3: Forgot Password
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [otp, setOtp] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const [successMsg, setSuccessMsg] = useState('');
-    const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-    const { login, signup, resetPassword } = useAuth();
+    const { loginWithGoogle } = useAuth();
     const navigate = useNavigate();
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleGoogleLogin = async () => {
         setError('');
-
-        if (step === 3) {
-            // Forgot Password Flow
-            if (!email) {
-                setError('Please enter your email address');
-                return;
-            }
-            try {
-                setIsLoading(true);
-                await resetPassword(email);
-                alert('Password reset link sent to your email! Please check your inbox.');
-                setStep(1);
-            } catch (err) {
-                console.error('Reset Error:', err);
-                if (err.code === 'auth/user-not-found') {
-                    setError('No user found with this email address.');
-                } else {
-                    setError(err.message || 'Failed to send reset email.');
-                }
-            } finally {
-                setIsLoading(false);
-            }
-            return;
-        }
-
-        if (!email || !password) {
-            setError('Please enter both email and password');
-            return;
-        }
-
         try {
             setIsLoading(true);
-            if (isLogin) {
-                // Standard Login
-                await login(email, password);
-                setSuccessMsg('Login Successful!');
-                setTimeout(() => navigate('/'), 1500);
-            } else {
-                // Sign Up: validate then create account via Firebase
-                if (!agreeToTerms) {
-                    setError('Please agree to the Terms of Service and Privacy Policy to continue.');
-                    setIsLoading(false);
-                    return;
-                }
-                if (password.length < 6) {
-                    setError('Password must be at least 6 characters.');
-                    setIsLoading(false);
-                    return;
-                }
-
-                // Firebase creates account + sends verification email automatically
-                await signup(email, password);
-                setStep(2); // Show "check your email" screen
-            }
+            await loginWithGoogle();
+            setSuccessMsg('Welcome to RoninWalls! 🎉');
+            setTimeout(() => navigate('/'), 1500);
         } catch (err) {
-            console.error('Authentication Error:', err);
-            if (err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
-                setError('Invalid email or password.');
-            } else if (err.code === 'auth/email-already-in-use') {
-                setError('An account with this email already exists. Please log in.');
+            console.error('Google Sign-In Error:', err);
+            if (err.code === 'auth/popup-closed-by-user') {
+                setError('Sign-in cancelled. Please try again.');
+            } else if (err.code === 'auth/popup-blocked') {
+                setError('Popup was blocked by your browser. Please allow popups for this site.');
             } else {
-                setError(err.message || 'Failed to authenticate.');
+                setError(err.message || 'Failed to sign in with Google.');
             }
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Step 2 is now just the "check your email" confirmation screen — no OTP entry needed
-
     if (successMsg) {
         return (
             <div className="login-page container flex-center">
                 <div className="login-card card" style={{ textAlign: 'center', padding: '3rem' }}>
-                    <div style={{ fontSize: '3.5rem', marginBottom: '1rem', animation: 'scaleUp 0.5s ease' }}>🎉</div>
+                    <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>🎉</div>
                     <h2 className="text-gradient">{successMsg}</h2>
                     <p style={{ color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Redirecting to home...</p>
                 </div>
@@ -105,152 +47,53 @@ export default function Login() {
     return (
         <div className="login-page container flex-center">
             <div className="login-card card">
-                <h2 className="text-gradient">
-                    {step === 3 ? 'Reset Password' : step === 2 ? 'Verify Email' : isLogin ? 'Welcome back' : 'Create an account'}
-                </h2>
-                <p className="login-subtitle">
-                    {step === 3
-                        ? 'Enter your email to receive a password reset link'
-                        : step === 2
-                        ? `We sent a 6-digit code to ${email}`
-                        : isLogin ? 'Sign in to save wallpapers and comment' : 'Join us to save wallpapers and comment'}
-                </p>
+                <h2 className="text-gradient">Welcome to RoninWalls</h2>
+                <p className="login-subtitle">Sign in to save wallpapers, like, and comment</p>
 
                 {error && <div className="error-message">{error}</div>}
 
-                {step === 1 && (
-                    <form onSubmit={handleSubmit} className="login-form">
-                        <div className="form-group">
-                            <label>Email Address</label>
-                            <input
-                                type="email"
-                                className="input-base"
-                                placeholder="developer@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                disabled={isLoading}
-                            />
-                        </div>
+                {/* Google Sign-In Button */}
+                <button
+                    onClick={handleGoogleLogin}
+                    disabled={isLoading}
+                    className="google-signin-btn"
+                    style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '12px',
+                        width: '100%',
+                        padding: '0.85rem 1.5rem',
+                        marginTop: '1.5rem',
+                        background: 'white',
+                        color: '#1f1f1f',
+                        border: 'none',
+                        borderRadius: 'var(--radius-lg)',
+                        fontSize: '1rem',
+                        fontWeight: '600',
+                        cursor: isLoading ? 'not-allowed' : 'pointer',
+                        opacity: isLoading ? 0.7 : 1,
+                        transition: 'transform 0.15s, box-shadow 0.15s',
+                        boxShadow: '0 2px 12px rgba(0,0,0,0.3)',
+                    }}
+                    onMouseEnter={e => { if (!isLoading) e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 2px 12px rgba(0,0,0,0.2)'; }}
+                >
+                    {/* Google Logo SVG */}
+                    <svg width="20" height="20" viewBox="0 0 48 48">
+                        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+                        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                    </svg>
+                    {isLoading ? 'Signing in...' : 'Continue with Google'}
+                </button>
 
-                        <div className="form-group mt-3">
-                            <label>Password</label>
-                            <input
-                                type="password"
-                                className="input-base"
-                                placeholder="••••••••"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                disabled={isLoading}
-                            />
-                        </div>
-
-                        {!isLogin && (
-                            <div className="terms-checkbox-row">
-                                <input
-                                    type="checkbox"
-                                    id="agreeTerms"
-                                    checked={agreeToTerms}
-                                    onChange={(e) => setAgreeToTerms(e.target.checked)}
-                                    disabled={isLoading}
-                                />
-                                <label htmlFor="agreeTerms" className="terms-label">
-                                    I agree to the{' '}
-                                    <Link to="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</Link>
-                                    {' '}and{' '}
-                                    <Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>
-                                </label>
-                            </div>
-                        )}
-
-                        <button type="submit" className="btn btn-primary w-100 mt-4" disabled={isLoading}>
-                            {isLoading ? 'Processing...' : isLogin ? 'Login' : 'Continue'}
-                        </button>
-
-                        <div className="text-center mt-3" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'center' }}>
-                            <button
-                                type="button"
-                                className="btn btn-ghost"
-                                onClick={() => setIsLogin(!isLogin)}
-                                disabled={isLoading}
-                            >
-                                {isLogin ? 'Need an account? Sign Up' : 'Already have an account? Login'}
-                            </button>
-                            {isLogin && (
-                                <button
-                                    type="button"
-                                    className="btn btn-ghost"
-                                    onClick={() => { setStep(3); setError(''); }}
-                                    disabled={isLoading}
-                                    style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}
-                                >
-                                    Forgot your password?
-                                </button>
-                            )}
-                        </div>
-                    </form>
-                )}
-
-                {step === 2 && (
-                    <div style={{ textAlign: 'center', padding: '1rem 0' }}>
-                        <div style={{ fontSize: '3.5rem', marginBottom: '1rem' }}>📧</div>
-                        <h3 style={{ color: 'var(--text-primary)', marginBottom: '0.75rem' }}>
-                            Check your inbox!
-                        </h3>
-                        <p style={{ color: 'var(--text-secondary)', lineHeight: 1.6, marginBottom: '1.5rem' }}>
-                            We sent a verification link to <strong style={{ color: 'var(--accent-primary)' }}>{email}</strong>.
-                            <br />Click the link in that email to activate your account.
-                        </p>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1.5rem' }}>
-                            After verifying, come back here and log in normally.
-                        </p>
-                        <button
-                            className="btn btn-primary w-100"
-                            onClick={() => { setStep(1); setIsLogin(true); setError(''); }}
-                        >
-                            Go to Login
-                        </button>
-                        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '1rem' }}>
-                            Didn't get the email? Check your spam folder.
-                        </p>
-                    </div>
-                )}
-
-                {step === 3 && (
-                    <form onSubmit={handleSubmit} className="login-form">
-                        <div className="form-group">
-                            <label>Email Address</label>
-                            <input
-                                type="email"
-                                className="input-base"
-                                placeholder="developer@example.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                disabled={isLoading}
-                            />
-                        </div>
-
-                        <button type="submit" className="btn btn-primary w-100 mt-4" disabled={isLoading}>
-                            {isLoading ? 'Sending...' : 'Send Reset Link'}
-                        </button>
-
-                        <div className="text-center mt-3">
-                            <button
-                                type="button"
-                                className="btn btn-ghost"
-                                onClick={() => { setStep(1); setError(''); setIsLogin(true); }}
-                                disabled={isLoading}
-                            >
-                                Back to Login
-                            </button>
-                        </div>
-                    </form>
-                )}
-
-                <div className="login-footer mt-4">
-                    By continuing, you agree to our{' '}
+                <div className="login-footer mt-4" style={{ textAlign: 'center', fontSize: '0.8rem' }}>
+                    By signing in, you agree to our{' '}
                     <Link to="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</Link>
                     {' '}and{' '}
-                    <Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>.
+                    <Link to="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</Link>
                 </div>
             </div>
         </div>

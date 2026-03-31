@@ -6,7 +6,9 @@ import {
     createUserWithEmailAndPassword,
     signOut,
     sendPasswordResetEmail,
-    sendEmailVerification
+    sendEmailVerification,
+    GoogleAuthProvider,
+    signInWithPopup
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 
@@ -69,6 +71,34 @@ export function AuthProvider({ children }) {
         return firebaseUser;
     };
 
+    const loginWithGoogle = async () => {
+        const provider = new GoogleAuthProvider();
+        const userCredential = await signInWithPopup(auth, provider);
+        const firebaseUser = userCredential.user;
+
+        const userDocRef = doc(db, 'users', firebaseUser.uid);
+        const userDoc = await getDoc(userDocRef);
+
+        if (!userDoc.exists()) {
+            // New Google user — create their Firestore profile
+            const baseName = (firebaseUser.displayName || firebaseUser.email.split('@')[0]).replace(/[^a-zA-Z0-9]/g, '');
+            const uniqueNum = Math.floor(Math.random() * 10000);
+            const username = `${baseName}_${uniqueNum}`;
+            const userData = {
+                email: firebaseUser.email,
+                username,
+                displayName: firebaseUser.displayName || '',
+                photoURL: firebaseUser.photoURL || '',
+                createdAt: new Date().toISOString(),
+                savedWallpapers: [],
+                history: []
+            };
+            await setDoc(userDocRef, userData);
+            setUser({ id: firebaseUser.uid, ...userData });
+        }
+        return firebaseUser;
+    };
+
     const logout = async () => {
         await signOut(auth);
     };
@@ -87,7 +117,7 @@ export function AuthProvider({ children }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, signup, logout, updateUser, resetPassword }}>
+        <AuthContext.Provider value={{ user, loading, login, signup, loginWithGoogle, logout, updateUser, resetPassword }}>
             {!loading && children}
         </AuthContext.Provider>
     );
