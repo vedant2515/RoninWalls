@@ -104,16 +104,32 @@
     display: none;
 }
 
-@media (max-width: 992px) {
-    .hidden-mobile {
-        display: none;
+@media (max-width: 768px) {
+    .navbar {
+        height: 64px;
     }
 
-    .hidden-desktop {
-        display: flex;
+    .logo {
+        font-size: 1.2rem;
+    }
+
+    .navbar-logo-img {
+        height: 30px;
+        width: 30px;
+        margin-right: 8px;
     }
 
     .navbar-inner {
         justify-content: space-between;
+        padding: 0 1rem;
     }
-}
+
+    .hidden-mobile {
+        display: none;
+    }
+
+    .btn-primary {
+        padding: 0.5rem 1rem;
+        font-size: 0.85rem;
+    }
+}

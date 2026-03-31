@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { User, Menu } from 'lucide-react';
+import { User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
@@ -23,9 +23,6 @@ export default function Navbar() {
                     ) : (
                         <Link to="/login" className="btn btn-primary">Login</Link>
                     )}
-                    <button className="mobile-menu-btn hidden-desktop">
-                        <Menu size={24} />
-                    </button>
                 </div>
             </div>
         </nav>
