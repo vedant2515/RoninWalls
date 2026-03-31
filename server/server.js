@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { S3Client, PutObjectCommand, ListObjectsV2Command, GetObjectCommand } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
-import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 dotenv.config();
 
@@ -24,20 +24,8 @@ const s3Client = new S3Client({
     }
 });
 
-// Configure Nodemailer Transporter
-// IMPORTANT: Replace user/pass with your real SMTP credentials or Gmail App Password
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
-    secure: false, // Use STARTTLS
-    auth: {
-        user: process.env.SMTP_USER || 'roninwallss@gmail.com',
-        pass: process.env.SMTP_PASS || 'gfhg ahqq pqbj urwi'
-    },
-    tls: {
-        rejectUnauthorized: false
-    }
-});
+// Resend email client — works over HTTPS so Render never blocks it
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // In-memory OTP store: Map<email, { otp, expiresAt }>
 // For production, use Redis or MongoDB to avoid data loss on server restart
@@ -183,24 +171,26 @@ app.post('/api/auth/send-otp', async (req, res) => {
         otpStore.set(email, { otp, expiresAt });
 
         const mailOptions = {
-            from: process.env.SMTP_USER || 'no-reply@roninwalls.com',
+            from: 'RoninWalls <onboarding@resend.dev>',
             to: email,
             subject: 'RoninWalls - Your Verification Code',
-            html: `<div style="font-family: sans-serif; padding: 20px;">
-                    <h2>Welcome to RoninWalls!</h2>
+            html: `<div style="font-family: sans-serif; padding: 20px; background:#0a0a0a; color:#fff;">
+                    <h2 style="color:#a855f7;">Welcome to RoninWalls!</h2>
                     <p>Your 6-digit verification code is:</p>
-                    <h1 style="color: #6366f1; letter-spacing: 5px;">${otp}</h1>
-                    <p>This code will expire in 10 minutes.</p>
+                    <h1 style="color: #6366f1; letter-spacing: 5px; font-size:2.5rem;">${otp}</h1>
+                    <p style="color:#888;">This code will expire in 10 minutes.</p>
                    </div>`
         };
 
-        // If credentials are empty placeholder, we just mock the send
-        if (!process.env.SMTP_PASS && mailOptions.from.includes('your-email')) {
-            console.log(`[MOCK EMAIL] OTP for ${email} is ${otp}`);
-            return res.json({ success: true, message: 'Mock OTP generated. Check server console.' });
+        // Check if Resend key is configured
+        if (!process.env.RESEND_API_KEY) {
+            console.log(`[MOCK EMAIL — No RESEND_API_KEY] OTP for ${email} is ${otp}`);
+            return res.json({ success: true, message: 'Mock OTP generated. Check server logs.' });
         }
 
-        await transporter.sendMail(mailOptions);
+        const { error: resendError } = await resend.emails.send(mailOptions);
+        if (resendError) throw new Error(resendError.message);
+
         res.json({ success: true, message: 'OTP sent successfully.' });
 
     } catch (error) {
