@@ -89,16 +89,18 @@ export default function Home() {
                     </p>
 
                     <div className="hero-search-wrapper">
-                        <Search className="search-icon-hero" size={24} />
-                        <input
-                            type="text"
-                            className="hero-search-input"
-                            placeholder="Search anime, gaming, cars..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            onFocus={() => setIsSearchFocused(true)}
-                            onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                        />
+                        <div className="search-field-container">
+                            <Search className="search-icon-hero" size={24} />
+                            <input
+                                type="text"
+                                className="hero-search-input"
+                                placeholder="Search anime, gaming, cars..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onFocus={() => setIsSearchFocused(true)}
+                                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
+                            />
+                        </div>
                         <button className="btn btn-primary search-btn" onClick={() => {}}>Search</button>
                     </div>
                 </div>
