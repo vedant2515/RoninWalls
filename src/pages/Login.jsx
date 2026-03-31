@@ -82,7 +82,8 @@ export default function Login() {
                 if (response.ok) {
                     setStep(2); // Move to OTP step
                 } else {
-                    setError(data.error || 'Failed to send OTP.');
+                    const errorText = data.details ? `${data.error} (${data.details})` : (data.error || 'Failed to send OTP.');
+                    setError(errorText);
                 }
             }
         } catch (err) {
