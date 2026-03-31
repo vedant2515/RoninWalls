@@ -27,10 +27,15 @@ const s3Client = new S3Client({
 // Configure Nodemailer Transporter
 // IMPORTANT: Replace user/pass with your real SMTP credentials or Gmail App Password
 const transporter = nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false, // Use STARTTLS
     auth: {
         user: process.env.SMTP_USER || 'roninwallss@gmail.com',
         pass: process.env.SMTP_PASS || 'gfhg ahqq pqbj urwi'
+    },
+    tls: {
+        rejectUnauthorized: false
     }
 });
 
