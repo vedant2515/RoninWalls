@@ -153,7 +153,7 @@ export default function Home() {
                                 </div>
                                 <div className="trending-grid">
                                     {filteredWallpapers.map(wp => (
-                                        <div data-type={wp.type} key={wp.id} style={{ display: 'flex' }}>
+                                        <div data-type={wp.type} key={wp.id}>
                                             <WallpaperCard
                                                 id={encodeURIComponent(wp.id)}
                                                 title={wp.title}
@@ -183,7 +183,7 @@ export default function Home() {
                                 </div>
                                 <div className="trending-grid">
                                     {trendingWallpapers.map(wp => (
-                                        <div data-type={wp.type} key={wp.id} style={{ display: 'flex' }}>
+                                        <div data-type={wp.type} key={wp.id}>
                                             <WallpaperCard
                                                 id={encodeURIComponent(wp.id)}
                                                 title={wp.title}
