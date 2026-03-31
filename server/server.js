@@ -27,11 +27,16 @@ const s3Client = new S3Client({
 // Configure Nodemailer Transporter
 // IMPORTANT: Replace user/pass with your real SMTP credentials or Gmail App Password
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // Use 'gmail' or standard host/port details for SendGrid/Mailgun
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true, // Use SSL
     auth: {
         user: process.env.SMTP_USER || 'roninwallss@gmail.com',
         pass: process.env.SMTP_PASS || 'gfhg ahqq pqbj urwi'
-    }
+    },
+    connectionTimeout: 10000, // 10 seconds
+    greetingTimeout: 10000,
+    socketTimeout: 10000
 });
 
 // In-memory OTP store: Map<email, { otp, expiresAt }>
